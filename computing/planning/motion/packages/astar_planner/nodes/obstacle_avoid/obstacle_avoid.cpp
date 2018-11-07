@@ -112,7 +112,7 @@ int main(int argc, char** argv)
   astar_planner::SearchInfo search_info;
 
   // ROS subscribers
-  ros::Subscriber map_sub = n.subscribe("grid_map_visualization/distance_transform", 1,
+  ros::Subscriber map_sub = n.subscribe("grid_map_filter_visualization/distance_transform", 1,
                                         &astar_planner::SearchInfo::mapCallback, &search_info);
   ros::Subscriber start_sub =
       n.subscribe("current_pose", 1, &astar_planner::SearchInfo::currentPoseCallback, &search_info);

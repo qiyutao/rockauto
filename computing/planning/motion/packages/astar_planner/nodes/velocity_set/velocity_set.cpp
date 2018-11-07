@@ -45,7 +45,7 @@ constexpr double DECELERATION_SEARCH_DISTANCE = 30;
 constexpr double STOP_SEARCH_DISTANCE = 60;
 int lightColor = 1;
 int closest_waypoint_index_ = 0;
-int stop_line_index = 26;
+int stop_line_index = 35;
 
 void obstacleColorByKind(const EControl kind, std_msgs::ColorRGBA &color, const double alpha=0.5)
 {
@@ -494,7 +494,7 @@ EControl obstacleDetection(int closest_waypoint, const autoware_msgs::lane& lane
   }
 
   //seven
-  if(!lightColor) {
+  if(lightColor == 0) {
     detection_result = EControl::STOPLINE;
     return detection_result;
   }
@@ -509,7 +509,7 @@ EControl obstacleDetection(int closest_waypoint, const autoware_msgs::lane& lane
 void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_result, int closest_waypoint,
                      int obstacle_waypoint, const ros::Publisher& final_waypoints_pub, VelocitySetPath* vs_path)
 {
-  ROS_ERROR("closest_waypoint: %d",closest_waypoint_index_);
+  //ROS_ERROR("closest_waypoint: %d",closest_waypoint_);
   if (detection_result == EControl::STOP || detection_result == EControl::STOPLINE)
   {  // STOP for obstacle/stopline
     // stop_waypoint is about stop_distance meter away from obstacles/stoplines
@@ -519,6 +519,7 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
       double deceleration = vs_info.getDecelerationStopline();
       int stop_waypoint =
           calcWaypointIndexReverse(vs_path->getPrevWaypoints(), stop_line_index - closest_waypoint_index_ + 5, stop_distance);
+      ROS_ERROR("stop_waypoint: %d",stop_waypoint);
       // change waypoints to stop by the stop_waypoint
       vs_path->changeWaypointsForStopping(stop_waypoint, stop_line_index - closest_waypoint_index_ + 5, closest_waypoint, deceleration);
       vs_path->avoidSuddenAcceleration(deceleration, closest_waypoint);
@@ -559,7 +560,7 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
 
 void light_colorCallback(const autoware_msgs::traffic_light::ConstPtr& msg)
 {
-  if(closest_waypoint_index_ > stop_line_index - 20) {
+  if((closest_waypoint_index_ > stop_line_index - 20)&&(closest_waypoint_index_<stop_line_index+3)) {
     lightColor = msg->traffic_light;
     ROS_ERROR("light color: %d", lightColor);
   }

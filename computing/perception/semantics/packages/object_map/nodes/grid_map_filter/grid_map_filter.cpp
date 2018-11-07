@@ -75,7 +75,11 @@ namespace object_map
 		grid_map::GridMap map({original_layer, "distance_transform", "wayarea", "dist_wayarea", "circle"});
 
 		//store costmap map_topic_ into the original layer
-		grid_map::GridMapRosConverter::fromOccupancyGrid(*in_message, "original", map);
+		nav_msgs::OccupancyGrid base_link_message = *in_message;  
+    base_link_message.header.frame_id = "base_link";  
+    base_link_message.info.origin.position.x += 1.2;//1.2是base_link到velodyne之间的x方向的平移值
+    base_link_message.info.origin.position.z = 0;
+    grid_map::GridMapRosConverter::fromOccupancyGrid(base_link_message, "original", map);
 
 		// apply distance transform to OccupancyGrid
 		if (use_dist_transform_)
