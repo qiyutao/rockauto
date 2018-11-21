@@ -45,7 +45,7 @@ constexpr double DECELERATION_SEARCH_DISTANCE = 30;
 constexpr double STOP_SEARCH_DISTANCE = 60;
 int lightColor = 1;
 int closest_waypoint_index_ = 0;
-int stop_line_index = 35;
+int stop_line_index = 26;
 
 void obstacleColorByKind(const EControl kind, std_msgs::ColorRGBA &color, const double alpha=0.5)
 {
