@@ -32,6 +32,7 @@
 #include "search_info_ros.h"
 
 #include <autoware_msgs/LaneArray.h>
+#include <std_msgs/Float64.h>
 
 namespace
 {
@@ -132,6 +133,8 @@ int main(int argc, char** argv)
   // ROS publishers
   ros::Publisher path_pub = n.advertise<nav_msgs::Path>("astar_path", 1, true);
   ros::Publisher waypoints_pub = n.advertise<autoware_msgs::lane>("safety_waypoints", 1, true);
+  ros::Publisher planTime_pub = n.advertise<std_msgs::Float64>("plan_time", 1, true);
+  //ros::Publisher obstacleIndex_pub = n.advertise<std_msgs::Int32>("obs_index", 1, true);
 
   ros::Rate loop_rate(10);
 
@@ -193,6 +196,9 @@ int main(int argc, char** argv)
     // Waiting for the call for avoidance ...
     if (!search_info.getMapSet() || !search_info.getStartSet() || !search_info.getGoalSet())
     {
+      if(search_info.getStartSet() && search_info.getGoalSet()) {
+        ROS_ERROR("-----------%d",search_info.getMapSet());
+      }
       search_info.reset();
       loop_rate.sleep();
       continue;
@@ -207,6 +213,9 @@ int main(int argc, char** argv)
     ros::WallTime timer_end = ros::WallTime::now();
     double time_ms = (timer_end - timer_begin).toSec() * 1000;
     ROS_INFO("planning time: %lf [ms]", time_ms);
+    std_msgs::Float64 planTime;
+    planTime.data =  time_ms;
+    planTime_pub.publish(planTime);
 
     // debug mode
     if (!search_info.getChangePath())

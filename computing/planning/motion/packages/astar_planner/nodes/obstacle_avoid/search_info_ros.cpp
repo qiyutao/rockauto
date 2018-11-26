@@ -30,6 +30,7 @@
 
 #include "search_info_ros.h"
 
+
 namespace astar_planner
 {
 SearchInfo::SearchInfo()
@@ -46,7 +47,7 @@ SearchInfo::SearchInfo()
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("map_frame", map_frame_, "map");
-  private_nh_.param<int>("obstacle_detect_count", obstacle_detect_count_, 10);
+  private_nh_.param<int>("obstacle_detect_count", obstacle_detect_count_, 0);
   private_nh_.param<int>("avoid_distance", avoid_distance_, 13);
   private_nh_.param<double>("avoid_velocity_limit_mps", avoid_velocity_limit_mps_, 4.166);
   private_nh_.param<double>("upper_bound_ratio", upper_bound_ratio_, 1.04);
@@ -202,12 +203,27 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
   {
     return;
   }
-
+//ROS_ERROR("--------------%d",msg->data);
   // msg->data : local index
   // closest   : global index
   // Conver local index to global index
   obstacle_waypoint_index_ = msg->data + closest_waypoint_index_;
-
+  if(preindex != obstacle_waypoint_index_) {
+     //ROS_ERROR("Point 1 preindex: %d    obs_index: %d",preindex,obstacle_waypoint_index_);
+    start = ros::WallTime::now();
+    preindex = obstacle_waypoint_index_;
+   return ;
+  } else {
+    //ROS_ERROR("Point 2");
+    ros::WallTime end = ros::WallTime::now();
+    double stopTime = (end-start).toSec();
+    if(stopTime<2){
+      //ROS_ERROR("^^^^^^^^^^^^^^^^^^^^^^^^^^^*%lf",stopTime);
+      return ;
+    } 
+    ROS_ERROR("***************************************%lf",stopTime);
+  }
+  preindex = -1;
   // Handle when detecting sensor noise as an obstacle
   static int prev_obstacle_waypoint_index = -1;
   static int obstacle_count = 0;
@@ -221,12 +237,12 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
   {
     obstacle_count = 1;
   }
-
+ROS_ERROR("point 1  %d",obstacle_waypoint_index_);
   prev_obstacle_waypoint_index = obstacle_waypoint_index_;
 
-  if (obstacle_count < obstacle_detect_count_)
-    return;
-
+  // if (obstacle_count < obstacle_detect_count_)
+  //   return;
+ROS_ERROR("point 2");
   // not debug mode
   if (change_path_)
     obstacle_count = 0;
@@ -249,17 +265,18 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
   // Do not avoid if (the obstacle is too close || current velocity is too fast)
   if (closest_waypoint_index_ + 1 > start_waypoint_index_)
   {
-    ROS_WARN("The obstacle is too close!");
-    return;
+    ROS_WARN("The obstacle is too close! change start index");
+    start_waypoint_index_ = closest_waypoint_index_ + 3;
+    //return;
   }
-
+ROS_ERROR("point 3");
   // apply velocity limit for avoiding
   if (current_velocity_mps_ > avoid_velocity_limit_mps_)
   {
     ROS_WARN("Velocity of the vehicle exceeds the avoid velocity limit");
     return;
   }
-
+ROS_ERROR("point 4");
   // Set start pose
   start_pose_global_ = current_waypoints_.waypoints[start_waypoint_index_].pose;
   start_pose_local_.pose = astar_planner::transformPose(start_pose_global_.pose, ogm2map_);
@@ -283,6 +300,7 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
   goal_pose_local_.pose = astar_planner::transformPose(goal_pose_global_.pose, ogm2map_);
 
   goal_set_ = true;
+  ROS_ERROR("-----------SET true");
 }
 
 void SearchInfo::stateCallback(const std_msgs::StringConstPtr &msg)

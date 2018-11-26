@@ -40,6 +40,7 @@
 #include <tf/transform_listener.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
+#include <time.h>
 
 namespace astar_planner
 {
@@ -171,6 +172,10 @@ private:
   bool start_set_;
   bool goal_set_;
   bool path_set_;
+  
+  bool change = true;
+  int preindex = -1;
+  ros::WallTime start;
 
   // ROS param
   std::string map_frame_;
