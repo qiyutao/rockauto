@@ -42,6 +42,9 @@
 #include <std_msgs/String.h>
 #include <time.h>
 
+#include "autoware_msgs/DetectedObject.h"
+#include "autoware_msgs/DetectedObjectArray.h"
+
 namespace astar_planner
 {
 class SearchInfo
@@ -60,6 +63,7 @@ public:
   void closestWaypointCallback(const std_msgs::Int32ConstPtr &msg);
   void obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg);
   void stateCallback(const std_msgs::StringConstPtr &msg);
+  //void detected_objectsCallback(const autoware_msgs::DetectedObjectArray& input);
 
   // get method
   bool getMapSet() const

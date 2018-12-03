@@ -37,6 +37,8 @@
 #include "velocity_set_info.h"
 #include "velocity_set_path.h"
 #include <autoware_msgs/traffic_light.h>
+#include "autoware_msgs/DetectedObject.h"
+#include "autoware_msgs/DetectedObjectArray.h"
 
 namespace
 {
@@ -46,6 +48,8 @@ constexpr double STOP_SEARCH_DISTANCE = 60;
 int lightColor = 1;
 int closest_waypoint_index_ = 0;
 int stop_line_index = 26;
+
+autoware_msgs::DetectedObjectArray m_detectedobject;
 
 void obstacleColorByKind(const EControl kind, std_msgs::ColorRGBA &color, const double alpha=0.5)
 {
@@ -327,6 +331,32 @@ int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int c
     {
       stop_obstacle_waypoint = i;
       *obstacle_type = EObstacleType::ON_WAYPOINTS;
+      //seven
+      //TODO:
+      double min = 1000;
+      int idobj;
+      
+        for (size_t j = 0; j < m_detectedobject.objects.size(); j++)
+        {
+          double tv = m_detectedobject.objects[j].velocity.linear.x;
+
+          // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+          double pose_x = m_detectedobject.objects[j].pose.position.x;
+          double pose_y = m_detectedobject.objects[j].pose.position.y;
+
+          tf::Vector3 object_vector(pose_x, pose_y, 0);
+          int tmp = tf::tfDistance(object_vector, tf_waypoint);
+          if(tmp<min) {
+            min = tmp;
+            idobj = j;
+          }
+        }
+        
+        if(m_detectedobject.objects.size()>0) {
+          ROS_ERROR("obj id: %d", idobj);
+          ROS_ERROR("obj v: %lf",m_detectedobject.objects[idobj].velocity.linear.x);
+          ROS_ERROR("obj x,y: %lf  %lf",m_detectedobject.objects[idobj].pose.position.x,m_detectedobject.objects[idobj].pose.position.x);
+        }
       break;
     }
 
@@ -571,6 +601,11 @@ void closestWaypointCallback(const std_msgs::Int32ConstPtr &msg)
   closest_waypoint_index_ = msg->data;
 }
 
+void detected_objectsCallback(const autoware_msgs::DetectedObjectArray& input) {
+  //ROS_ERROR("recv detected object %d",input.objects.size());
+  m_detectedobject = input;
+}
+
 }  // end namespace
 
 int main(int argc, char** argv)
@@ -621,6 +656,8 @@ int main(int argc, char** argv)
   ros::Subscriber sub_area = nh.subscribe("vector_map_info/area", 1, &CrossWalk::areaCallback, &crosswalk);
   ros::Subscriber sub_line = nh.subscribe("vector_map_info/line", 1, &CrossWalk::lineCallback, &crosswalk);
   ros::Subscriber sub_point = nh.subscribe("vector_map_info/point", 1, &CrossWalk::pointCallback, &crosswalk);
+
+  ros::Subscriber detected_objects_sub = nh.subscribe("/detection/lidar_tracker/objects", 1, &detected_objectsCallback);
 
   // publisher
   ros::Publisher detection_range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 1);

@@ -129,6 +129,7 @@ int main(int argc, char** argv)
   ros::Subscriber current_velocity_sub =
       n.subscribe("current_velocity", 1, &astar_planner::SearchInfo::currentVelocityCallback, &search_info);
   ros::Subscriber state_sub = n.subscribe("state", 1, &astar_planner::SearchInfo::stateCallback, &search_info);
+  //ros::Subscriber detected_objects_sub = n.subscribe("/detected_objects", 1, &astar_planner::SearchInfo::detected_objectsCallback, &search_info);
 
   // ROS publishers
   ros::Publisher path_pub = n.advertise<nav_msgs::Path>("astar_path", 1, true);

@@ -221,7 +221,7 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
       //ROS_ERROR("^^^^^^^^^^^^^^^^^^^^^^^^^^^*%lf",stopTime);
       return ;
     } 
-    ROS_ERROR("***************************************%lf",stopTime);
+    //ROS_ERROR("***************************************%lf",stopTime);
   }
   preindex = -1;
   // Handle when detecting sensor noise as an obstacle
@@ -237,12 +237,12 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
   {
     obstacle_count = 1;
   }
-ROS_ERROR("point 1  %d",obstacle_waypoint_index_);
+//ROS_ERROR("point 1  %d",obstacle_waypoint_index_);
   prev_obstacle_waypoint_index = obstacle_waypoint_index_;
 
   // if (obstacle_count < obstacle_detect_count_)
   //   return;
-ROS_ERROR("point 2");
+//ROS_ERROR("point 2");
   // not debug mode
   if (change_path_)
     obstacle_count = 0;
@@ -269,14 +269,14 @@ ROS_ERROR("point 2");
     start_waypoint_index_ = closest_waypoint_index_ + 3;
     //return;
   }
-ROS_ERROR("point 3");
+//ROS_ERROR("point 3");
   // apply velocity limit for avoiding
   if (current_velocity_mps_ > avoid_velocity_limit_mps_)
   {
     ROS_WARN("Velocity of the vehicle exceeds the avoid velocity limit");
     return;
   }
-ROS_ERROR("point 4");
+//ROS_ERROR("point 4");
   // Set start pose
   start_pose_global_ = current_waypoints_.waypoints[start_waypoint_index_].pose;
   start_pose_local_.pose = astar_planner::transformPose(start_pose_global_.pose, ogm2map_);
@@ -300,7 +300,7 @@ ROS_ERROR("point 4");
   goal_pose_local_.pose = astar_planner::transformPose(goal_pose_global_.pose, ogm2map_);
 
   goal_set_ = true;
-  ROS_ERROR("-----------SET true");
+  //ROS_ERROR("-----------SET true");
 }
 
 void SearchInfo::stateCallback(const std_msgs::StringConstPtr &msg)
@@ -315,4 +315,18 @@ void SearchInfo::reset()
   goal_set_ = false;
   obstacle_waypoint_index_ = -1;
 }
+
+// void detected_objectsCallback(const autoware_msgs::DetectedObjectArray& input) {
+//   for (size_t i = 0; i < input.objects.size(); i++)
+//   {
+//     double tv = input.objects[i].velocity.linear.x;
+
+//     // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+//     double pose_x = input.objects[i].pose.position.x;
+//     double pose_y = input.objects[i].pose.position.y;
+
+    
+//   }
+// }
+
 }
