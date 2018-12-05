@@ -43,7 +43,6 @@
 #include <time.h>
 
 #include "autoware_msgs/DetectedObject.h"
-#include "autoware_msgs/DetectedObjectArray.h"
 
 namespace astar_planner
 {
@@ -63,7 +62,8 @@ public:
   void closestWaypointCallback(const std_msgs::Int32ConstPtr &msg);
   void obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg);
   void stateCallback(const std_msgs::StringConstPtr &msg);
-  //void detected_objectsCallback(const autoware_msgs::DetectedObjectArray& input);
+
+  void detected_objectsCallback(const autoware_msgs::DetectedObject &input);
 
   // get method
   bool getMapSet() const
@@ -203,6 +203,8 @@ private:
 
   // for prunning
   double upper_bound_distance_;
+
+  autoware_msgs::DetectedObject m_detectedobject;
 };
 
 }  // namespace astar_planner

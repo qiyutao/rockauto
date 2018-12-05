@@ -194,7 +194,7 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
   // not always avoid AND current state is not avoidance
   if (!avoidance_ && state_ != "OBSTACLE_AVOIDANCE")
   {
-    ROS_WARN("current state is not OBSTACLE_AVOIDANCE");
+    ROS_ERROR("current state is not OBSTACLE_AVOIDANCE");
     return;
   }
 
@@ -208,21 +208,21 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
   // closest   : global index
   // Conver local index to global index
   obstacle_waypoint_index_ = msg->data + closest_waypoint_index_;
-  if(preindex != obstacle_waypoint_index_) {
-     //ROS_ERROR("Point 1 preindex: %d    obs_index: %d",preindex,obstacle_waypoint_index_);
-    start = ros::WallTime::now();
-    preindex = obstacle_waypoint_index_;
-   return ;
-  } else {
-    //ROS_ERROR("Point 2");
-    ros::WallTime end = ros::WallTime::now();
-    double stopTime = (end-start).toSec();
-    if(stopTime<2){
-      //ROS_ERROR("^^^^^^^^^^^^^^^^^^^^^^^^^^^*%lf",stopTime);
-      return ;
-    } 
-    //ROS_ERROR("***************************************%lf",stopTime);
-  }
+  // if(preindex != obstacle_waypoint_index_) {
+  //    //ROS_ERROR("Point 1 preindex: %d    obs_index: %d",preindex,obstacle_waypoint_index_);
+  //   start = ros::WallTime::now();
+  //   preindex = obstacle_waypoint_index_;
+  //  return ;
+  // } else {
+  //   //ROS_ERROR("Point 2");
+  //   ros::WallTime end = ros::WallTime::now();
+  //   double stopTime = (end-start).toSec();
+  //   if(stopTime<2){
+  //     //ROS_ERROR("^^^^^^^^^^^^^^^^^^^^^^^^^^^*%lf",stopTime);
+  //     return ;
+  //   } 
+  //   //ROS_ERROR("***************************************%lf",stopTime);
+  // }
   preindex = -1;
   // Handle when detecting sensor noise as an obstacle
   static int prev_obstacle_waypoint_index = -1;
@@ -237,12 +237,12 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
   {
     obstacle_count = 1;
   }
-//ROS_ERROR("point 1  %d",obstacle_waypoint_index_);
+ROS_ERROR("point 1  %d",obstacle_waypoint_index_);
   prev_obstacle_waypoint_index = obstacle_waypoint_index_;
 
   // if (obstacle_count < obstacle_detect_count_)
   //   return;
-//ROS_ERROR("point 2");
+ROS_ERROR("point 2");
   // not debug mode
   if (change_path_)
     obstacle_count = 0;
@@ -269,14 +269,14 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
     start_waypoint_index_ = closest_waypoint_index_ + 3;
     //return;
   }
-//ROS_ERROR("point 3");
+ROS_ERROR("point 3");
   // apply velocity limit for avoiding
   if (current_velocity_mps_ > avoid_velocity_limit_mps_)
   {
     ROS_WARN("Velocity of the vehicle exceeds the avoid velocity limit");
     return;
   }
-//ROS_ERROR("point 4");
+ROS_ERROR("point 4");
   // Set start pose
   start_pose_global_ = current_waypoints_.waypoints[start_waypoint_index_].pose;
   start_pose_local_.pose = astar_planner::transformPose(start_pose_global_.pose, ogm2map_);
@@ -300,7 +300,7 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
   goal_pose_local_.pose = astar_planner::transformPose(goal_pose_global_.pose, ogm2map_);
 
   goal_set_ = true;
-  //ROS_ERROR("-----------SET true");
+  ROS_ERROR("-----------SET true");
 }
 
 void SearchInfo::stateCallback(const std_msgs::StringConstPtr &msg)
@@ -316,17 +316,13 @@ void SearchInfo::reset()
   obstacle_waypoint_index_ = -1;
 }
 
-// void detected_objectsCallback(const autoware_msgs::DetectedObjectArray& input) {
-//   for (size_t i = 0; i < input.objects.size(); i++)
-//   {
-//     double tv = input.objects[i].velocity.linear.x;
-
-//     // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-//     double pose_x = input.objects[i].pose.position.x;
-//     double pose_y = input.objects[i].pose.position.y;
-
-    
-//   }
-// }
-
+void SearchInfo::detected_objectsCallback(const autoware_msgs::DetectedObject &input) {
+  // ROS_ERROR("------------obj id: %d", input.id);
+  // ROS_ERROR("------------obj v: %lf",input.velocity.linear.x*3.6);
+  // ROS_ERROR("------------obj x,y: %lf  %lf",input.pose.position.x,input.pose.position.y);
+  m_detectedobject = input;   
+  if(abs(m_detectedobject.velocity.linear.x*3.6)<2) {
+    m_detectedobject.velocity.linear.x = 0;
+  }    
+}
 }

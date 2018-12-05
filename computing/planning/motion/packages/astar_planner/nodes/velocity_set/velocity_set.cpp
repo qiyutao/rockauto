@@ -48,6 +48,7 @@ constexpr double STOP_SEARCH_DISTANCE = 60;
 int lightColor = 1;
 int closest_waypoint_index_ = 0;
 int stop_line_index = 26;
+ros::Publisher obstacle_object_pub;
 
 autoware_msgs::DetectedObjectArray m_detectedobject;
 
@@ -353,9 +354,11 @@ int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int c
         }
         
         if(m_detectedobject.objects.size()>0) {
-          ROS_ERROR("obj id: %d", idobj);
-          ROS_ERROR("obj v: %lf",m_detectedobject.objects[idobj].velocity.linear.x);
-          ROS_ERROR("obj x,y: %lf  %lf",m_detectedobject.objects[idobj].pose.position.x,m_detectedobject.objects[idobj].pose.position.x);
+          //ROS_ERROR("obj size: %d", m_detectedobject.objects.size());
+          //ROS_ERROR("obj id: %d", m_detectedobject.objects[idobj].id);
+          //ROS_ERROR("obj v: %lf",m_detectedobject.objects[idobj].velocity.linear.x*3.6);
+          //ROS_ERROR("obj x,y: %lf  %lf",m_detectedobject.objects[idobj].pose.position.x,m_detectedobject.objects[idobj].pose.position.x);
+          obstacle_object_pub.publish(m_detectedobject.objects[idobj]);
         }
       break;
     }
@@ -663,6 +666,8 @@ int main(int argc, char** argv)
   ros::Publisher detection_range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 1);
   ros::Publisher obstacle_pub = nh.advertise<visualization_msgs::Marker>("obstacle", 1);
   ros::Publisher obstacle_waypoint_pub = nh.advertise<std_msgs::Int32>("obstacle_waypoint", 1, true);
+
+  obstacle_object_pub = nh.advertise<autoware_msgs::DetectedObject>("obstacle_object", 1, true);
 
   ros::Publisher final_waypoints_pub;
   if(enablePlannerDynamicSwitch){
